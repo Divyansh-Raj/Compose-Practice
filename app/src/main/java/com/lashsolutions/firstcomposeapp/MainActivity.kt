@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
@@ -29,6 +30,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -51,38 +53,66 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lashsolutions.firstcomposeapp.ui.theme.FirstComposeAppTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
             FirstComposeAppTheme {
+                val navController = rememberNavController()
                 val taskViewModel: TaskViewModel = viewModel()
+
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     topBar = {
                         TopAppBar(
                             colors = TopAppBarDefaults.topAppBarColors(
                                 containerColor = Color(0xFF000000),
-                                titleContentColor = White
+                                titleContentColor = White,
+                                actionIconContentColor = White
                             ),
                             title = {
                                 Text("To-Do App")
+                            },
+                            actions = {
+                                IconButton(
+                                    onClick = {
+                                        // Navigate to GridTask screen
+                                        navController.navigate("grid_task")
+                                    }
+                                ) {
+                                    Icon(Icons.Default.MoreVert, contentDescription = "More options")
+                                }
                             }
                         )
-                    },
+                    }
                 ) { innerPadding ->
-                    ToDOHomePage(
-                        modifier = Modifier.padding(innerPadding),
-                        taskViewModel = taskViewModel,
-                    )
+                    NavHost(
+                        navController = navController,
+                        startDestination = "todo_home",
+                        modifier = Modifier.padding(innerPadding)
+                    ) {
+                        composable("todo_home") {
+                            ToDOHomePage(taskViewModel = taskViewModel)
+                        }
+                        composable("grid_task") {
+                            GridTaskScreen(
+                                onBackClick = {
+                                    navController.popBackStack() // This navigates back to the previous screen
+                                }
+                            )
+                        }
+                    }
                 }
             }
         }
     }
+
 }
 
 @Composable
